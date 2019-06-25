@@ -53,6 +53,50 @@ class ProductController extends Controller
         return $product;
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request)
+    {
+        $updatedProduct = $request->only(['name', 'quantity', 'price']);
+
+        $products = $this->fetchProducts();
+
+        $i = $this->findProductIndex($products, $request->submitted);
+
+        $products[$i] = [
+            'name' => $updatedProduct['name'] ?: $products[$i]['name'],
+            'price' => (int) ($updatedProduct['price'] ?? $products[$i]['price']),
+            'quantity' => (int) ($updatedProduct['quantity'] ?? $products[$i]['quantity']),
+            'submitted' => now()->toDateTimeString()
+        ];
+
+        $this->saveProducts($products);
+
+        return $products[$i];
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Request $request)
+    {
+        $products = $this->fetchProducts();
+
+        $productIndex = $this->findProductIndex($products, $request->submitted);
+
+        unset($products[$productIndex]);
+
+        $this->saveProducts(array_values($products));
+
+        return response()->json(null, 204);
+    }
+
     protected function fetchProducts($path = null)
     {
         $path = $path ?: config('app.products-path', storage_path('/app/products.json'));
@@ -74,5 +118,12 @@ class ProductController extends Controller
         return collect($products)->sortByDesc(function ($product) use ($key) {
             return Carbon::parse($product[$key])->timestamp;
         })->values()->all();
+    }
+
+    protected function findProductIndex($products, $submitted)
+    {
+        return collect($products)->search(function ($product) use ($submitted) {
+            return $product['submitted'] === $submitted;
+        });
     }
 }

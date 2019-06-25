@@ -1726,6 +1726,44 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -1738,22 +1776,93 @@ __webpack_require__.r(__webpack_exports__);
       }
     };
   },
+  mounted: function mounted() {
+    var _this = this;
+
+    axios.get('/products').then(function (response) {
+      _this.products = response.data;
+    });
+  },
+  computed: {
+    totalProducts: function totalProducts() {
+      return this.products.reduce(function (totalProducts, product) {
+        return totalProducts + product.quantity;
+      }, 0);
+    },
+    totalPrice: function totalPrice() {
+      return this.products.reduce(function (totalPrice, product) {
+        return totalPrice + product.price * product.quantity;
+      }, 0);
+    }
+  },
   methods: {
     add: function add() {
-      var _this = this;
+      var _this2 = this;
 
       axios.post('/products', this.product).then(function (response) {
-        _this.products.unshift(response.data);
+        _this2.products.unshift(response.data);
 
-        _this.errors = null;
-        _this.product = {
+        _this2.errors = null;
+        _this2.product = {
           name: null,
           price: null,
           quantity: null
         };
       })["catch"](function (error) {
-        _this.errors = error.response.data.errors;
+        _this2.errors = error.response.data.errors;
       });
+    },
+    update: function update(id, submitted) {
+      var _this3 = this;
+
+      var updatedProduct = {
+        name: this.$refs.name[id].textContent,
+        price: this.$refs.price[id].textContent,
+        quantity: this.$refs.quantity[id].textContent,
+        submitted: this.products[id].submitted
+      };
+      console.log([this.products[id], updatedProduct]);
+
+      if (this.isEqual(this.products[id], updatedProduct)) {
+        console.log('we are here');
+        return;
+      }
+
+      axios.patch('/products', updatedProduct).then(function (response) {
+        _this3.$delete(_this3.products, id);
+
+        _this3.products.unshift(response.data);
+
+        _this3.errors = null;
+      })["catch"](function (error) {
+        _this3.errors = error.response.data.errors;
+      });
+    },
+    remove: function remove(id, submitted) {
+      var _this4 = this;
+
+      axios["delete"]("/products?submitted=".concat(submitted)).then(function (response) {
+        _this4.products.splice(id, 1);
+
+        _this4.errors = null;
+      })["catch"](function (error) {
+        _this4.errors = error.response.data.errors;
+      });
+    },
+    isEqual: function isEqual(product, updatedProduct) {
+      if (product.name != updatedProduct.name) {
+        return false;
+      }
+
+      if (product.price != updatedProduct.price) {
+        return false;
+      }
+
+      if (product.quantity != updatedProduct.quantity) {
+        return false;
+      }
+
+      return true;
     }
   }
 });
@@ -37166,10 +37275,142 @@ var render = function() {
           )
         ]
       )
-    ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "col-12 mt-5" },
+      [
+        _vm.products.length
+          ? [
+              _c("h2", [_vm._v("All products")]),
+              _vm._v(" "),
+              _c("table", { staticClass: "table" }, [
+                _vm._m(0),
+                _vm._v(" "),
+                _c(
+                  "tbody",
+                  [
+                    _vm._l(_vm.products, function(product, i) {
+                      return _c("tr", [
+                        _c(
+                          "td",
+                          {
+                            ref: "name",
+                            refInFor: true,
+                            staticClass: "editable",
+                            attrs: { contenteditable: "" },
+                            on: {
+                              blur: function($event) {
+                                return _vm.update(i, product.submitted)
+                              }
+                            }
+                          },
+                          [_vm._v(_vm._s(product.name))]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "td",
+                          {
+                            ref: "quantity",
+                            refInFor: true,
+                            staticClass: "editable",
+                            attrs: { contenteditable: "" },
+                            on: {
+                              blur: function($event) {
+                                return _vm.update(i, product.submitted)
+                              }
+                            }
+                          },
+                          [_vm._v(_vm._s(product.quantity))]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "td",
+                          {
+                            ref: "price",
+                            refInFor: true,
+                            staticClass: "editable",
+                            attrs: { contenteditable: "" },
+                            on: {
+                              blur: function($event) {
+                                return _vm.update(i, product.submitted)
+                              }
+                            }
+                          },
+                          [_vm._v(_vm._s(product.price))]
+                        ),
+                        _vm._v(" "),
+                        _c("td", [_vm._v(_vm._s(product.submitted))]),
+                        _vm._v(" "),
+                        _c("td", [
+                          _vm._v(_vm._s(product.quantity * product.price))
+                        ]),
+                        _vm._v(" "),
+                        _c("td", [
+                          _c(
+                            "button",
+                            {
+                              staticClass: "btn btn-danger",
+                              attrs: { type: "button" },
+                              on: {
+                                click: function($event) {
+                                  return _vm.remove(i, product.submitted)
+                                }
+                              }
+                            },
+                            [_vm._v("Delete")]
+                          )
+                        ])
+                      ])
+                    }),
+                    _vm._v(" "),
+                    _c("tr", { staticClass: "totals" }, [
+                      _c("td", [_vm._v("Totals")]),
+                      _vm._v(" "),
+                      _c("td", [_vm._v(_vm._s(_vm.totalProducts))]),
+                      _vm._v(" "),
+                      _c("td", [_vm._v("-")]),
+                      _vm._v(" "),
+                      _c("td", [_vm._v("-")]),
+                      _vm._v(" "),
+                      _c("td", [_vm._v(_vm._s(_vm.totalPrice))]),
+                      _vm._v(" "),
+                      _c("td")
+                    ])
+                  ],
+                  2
+                )
+              ])
+            ]
+          : _c("div", [_vm._v("No products")])
+      ],
+      2
+    )
   ])
 }
-var staticRenderFns = []
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("thead", [
+      _c("tr", [
+        _c("td", { attrs: { scope: "col" } }, [_vm._v("Product Name")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Quantity in Stock")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Price Per Item")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Submitted")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Total")]),
+        _vm._v(" "),
+        _c("th", { attrs: { scope: "col" } }, [_vm._v("Delete")])
+      ])
+    ])
+  }
+]
 render._withStripped = true
 
 

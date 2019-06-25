@@ -17,3 +17,5 @@ Route::get('/', function () {
 
 Route::get('/products', 'ProductController@index');
 Route::post('/products', 'ProductController@store');
+Route::patch('/products', 'ProductController@update');
+Route::delete('/products', 'ProductController@destroy');
